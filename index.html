@@ -31,7 +31,7 @@
 
         /* Menu Styles */
         .menu-container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; min-height: 100%; padding-bottom: 40px; }
-        .title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #111827; background: linear-gradient(45deg, #2563eb, #9333ea); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #111827; background: linear-gradient(45deg, #2563eb, #9333ea); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #6b7280; margin-bottom: 2rem; }
         
         #theme-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
@@ -45,10 +45,24 @@
         .theme-btn:active { transform: scale(0.98); }
         .theme-icon { font-size: 2rem; background: rgba(255,255,255,0.25); padding: 8px; border-radius: 12px; margin-right: 15px; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; }
 
+        /* Special Random Button */
+        .random-mode-btn {
+            background: linear-gradient(135deg, #6366f1, #ec4899, #f59e0b);
+            background-size: 200% 200%;
+            animation: gradientBG 3s ease infinite;
+            grid-column: 1 / -1; /* Full width */
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         /* Selection Styles */
         .char-grid { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
+            /* Columns handled by JS style var */
+            grid-template-columns: repeat(var(--cols, 4), 1fr); 
             gap: 8px; 
             margin-top: 20px; 
             padding-bottom: 40px;
@@ -75,7 +89,7 @@
         
         .game-grid { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* 4 Columns */
+            grid-template-columns: repeat(var(--cols, 4), 1fr); /* Dynamic Columns */
             gap: 6px; 
             overflow-y: auto; 
             padding-bottom: 10px;
@@ -119,11 +133,8 @@
         }
         .reset-btn:hover { color: #ef4444; border-color: #fca5a5; }
 
-        /* Responsive for Tablet/Desktop */
         @media (min-width: 600px) {
-            .char-grid { grid-template-columns: repeat(6, 1fr); }
             #theme-list { grid-template-columns: 1fr 1fr; }
-            .game-grid { grid-template-columns: repeat(6, 1fr); } /* 6 Columns on larger screens */
         }
     </style>
 </head>
@@ -135,7 +146,7 @@
             <div class="menu-container">
                 <div class="text-center">
                     <h1 class="title">Who Am I?</h1>
-                    <p class="subtitle">เกมทายปริศนาฉบับ Deluxe (24 ตัวละคร)</p>
+                    <p class="subtitle">เกมทายปริศนาฉบับ Deluxe</p>
                 </div>
                 <div id="theme-list">
                     <!-- Themes injected here -->
@@ -293,6 +304,15 @@
             }
         };
 
+        // --- HELPER: SHUFFLE ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         // --- STATE ---
         let state = {
             currentTheme: 'faces',
@@ -300,7 +320,8 @@
             p1Secret: null,
             p2Secret: null,
             p1Board: [], 
-            p2Board: []
+            p2Board: [],
+            gameCharacters: [] // Store the specific characters for this round
         };
 
         // --- INIT ---
@@ -314,6 +335,21 @@
             const list = document.getElementById('theme-list');
             list.innerHTML = '';
             
+            // 1. All Random Button
+            const randomBtn = document.createElement('button');
+            randomBtn.className = 'theme-btn random-mode-btn';
+            randomBtn.onclick = () => startSetup('all_random');
+            randomBtn.innerHTML = `
+                <span class="theme-icon">🎲</span>
+                <div style="flex:1;">
+                    <div class="font-bold" style="font-size:1.1rem; color:white;">รวมมิตร (All Random)</div>
+                    <div style="opacity:0.9; font-size:0.75rem; color:white;">สุ่มจากทุกหมวด</div>
+                </div>
+                <i data-lucide="shuffle" style="color:white; opacity:0.8;"></i>
+            `;
+            list.appendChild(randomBtn);
+
+            // 2. Normal Themes
             Object.keys(THEMES).forEach(key => {
                 const theme = THEMES[key];
                 const btn = document.createElement('button');
@@ -337,9 +373,13 @@
         function renderSelection(player) {
             const grid = document.getElementById('select-grid');
             grid.innerHTML = '';
-            const theme = THEMES[state.currentTheme];
+            const characters = state.gameCharacters;
             const badge = document.getElementById('player-turn-badge');
             
+            // Dynamic columns calculation
+            const cols = calculateColumns(characters.length);
+            grid.style.setProperty('--cols', cols);
+
             if (player === 1) {
                 badge.className = 'badge bg-red';
                 badge.textContent = 'ตาของผู้เล่น 1';
@@ -350,7 +390,7 @@
                 document.getElementById('select-screen').style.backgroundColor = '#eff6ff';
             }
 
-            theme.characters.forEach(char => {
+            characters.forEach(char => {
                 const btn = document.createElement('div');
                 btn.className = 'char-select-btn';
                 btn.onclick = () => selectSecret(player, char);
@@ -365,11 +405,9 @@
         }
 
         function renderGame() {
-            const theme = THEMES[state.currentTheme];
-            renderPlayerBoard(1, theme.characters);
-            renderPlayerBoard(2, theme.characters);
+            renderPlayerBoard(1, state.gameCharacters);
+            renderPlayerBoard(2, state.gameCharacters);
             
-            // Set secret popups
             document.getElementById('p1-secret-popup').innerHTML = `
                 <span style="font-size:3rem;">${state.p1Secret.icon}</span>
                 <span style="font-weight:bold;">${state.p1Secret.name}</span>
@@ -388,6 +426,10 @@
             const elimSet = player === 1 ? state.p1Board : state.p2Board;
             const grid = document.getElementById(gridId);
             const countSpan = document.getElementById(player === 1 ? 'p1-count' : 'p2-count');
+            
+            // Dynamic columns calculation
+            const cols = calculateColumns(characters.length);
+            grid.style.setProperty('--cols', cols);
             
             grid.innerHTML = '';
             let activeCount = 0;
@@ -412,13 +454,39 @@
         }
 
         // --- LOGIC ---
+        function calculateColumns(total) {
+            // Target 3 rows if possible, or balanced grid
+            if (total <= 12) return 4; // 4x3
+            if (total <= 18) return 6; // 6x3
+            if (total <= 24) return 8; // 8x3
+            if (total <= 32) return 8; // 8x4
+            return 8; // Cap columns
+        }
+
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function startSetup(themeKey) {
+        function startSetup(themeKey, size = 24) {
             state.currentTheme = themeKey;
+            
+            let chars = [];
+            
+            if (themeKey === 'all_random') {
+                Object.values(THEMES).forEach(theme => {
+                    chars.push(...theme.characters);
+                });
+                chars = shuffleArray(chars);
+            } else {
+                chars = [...THEMES[themeKey].characters];
+                chars = shuffleArray(chars);
+            }
+
+            // Slice based on selected size
+            chars = chars.slice(0, size);
+
+            state.gameCharacters = chars; 
             state.p1Board = [];
             state.p2Board = [];
             state.phase = 'select-p1';
@@ -442,7 +510,7 @@
             const index = board.indexOf(charId);
             if (index === -1) board.push(charId);
             else board.splice(index, 1);
-            renderPlayerBoard(player, THEMES[state.currentTheme].characters);
+            renderPlayerBoard(player, state.gameCharacters);
         }
 
         function showSecret(player, show) {
