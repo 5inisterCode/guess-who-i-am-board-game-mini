@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Who Am I? - คู่หูนักสืบ</title>
+    <!-- ไอคอนจาก Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- CSS: การตกแต่ง --- */
+        :root {
+            --primary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --danger-color: #ef4444;
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; }
+
+        /* Helpers */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
+        .cursor-pointer { cursor: pointer; }
+
+        /* Screens */
+        #app { height: 100%; width: 100%; position: relative; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px; transition: opacity 0.3s; }
+
+        /* Menu Styles */
+        .menu-container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        .title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #111827; }
+        .subtitle { color: #6b7280; margin-bottom: 2rem; }
+        
+        .theme-btn {
+            display: flex; align-items: center; width: 100%; padding: 1.5rem; margin-bottom: 1rem;
+            border: none; border-radius: 1rem; color: white; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s; text-align: left;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .theme-btn:active { transform: scale(0.98); }
+        .theme-icon { font-size: 2.5rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; margin-right: 15px; }
+
+        /* Selection Styles */
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+        .char-select-btn {
+            background: white; border: 2px solid transparent; border-radius: 12px; padding: 10px;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .char-select-btn:hover { border-color: #e5e7eb; background: #f9fafb; }
+        .char-select-btn:active { transform: scale(0.95); }
+        .char-emoji { font-size: 2.5rem; margin-bottom: 5px; }
+        .char-name { font-size: 0.8rem; color: #4b5563; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+
+        /* Game Board Styles */
+        .split-screen { display: flex; flex-direction: column; height: 100%; background: #1f2937; }
+        .player-area { flex: 1; background: white; padding: 15px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+        .player-area.p1 { border-bottom: 2px solid #374151; transform: rotate(180deg); }
+        .player-area.p2 { border-top: 2px solid #374151; }
+        
+        .board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .badge { padding: 4px 12px; border-radius: 999px; color: white; font-size: 0.85rem; font-weight: bold; }
+        .bg-red { background-color: #ef4444; }
+        .bg-blue { background-color: #3b82f6; }
+        
+        .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; overflow-y: auto; padding-bottom: 10px; }
+        
+        .card {
+            background: white; border: 2px solid #e5e7eb; border-radius: 10px;
+            padding: 8px; text-align: center; cursor: pointer; position: relative;
+            user-select: none; transition: all 0.1s;
+        }
+        .card:active { transform: scale(0.95); }
+        .card.eliminated { background-color: #e5e7eb; opacity: 0.6; transform: scale(0.95); border-color: #d1d5db; }
+        .card.eliminated .char-emoji { filter: grayscale(100%) blur(1px); }
+        .card .x-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; width: 80%; height: 80%; display: none; }
+        .card.eliminated .x-mark { display: block; }
+
+        .secret-btn {
+            background: white; border: 1px solid #d1d5db; padding: 4px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .secret-popup {
+            position: absolute; top: 40px; right: 0; background: white; padding: 10px;
+            border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 2px solid #fcd34d;
+            z-index: 50; display: flex; flex-direction: column; align-items: center;
+            animation: popIn 0.2s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .center-controls {
+            position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 100;
+        }
+        .reset-btn {
+            background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Responsive tweaks */
+        @media (min-width: 768px) {
+            .char-grid, .game-grid { grid-template-columns: repeat(8, 1fr); }
+            .menu-container { max-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- 1. Menu Screen -->
+        <div id="menu-screen" class="screen">
+            <div class="menu-container">
+                <div class="text-center">
+                    <h1 class="title">Who Am I?</h1>
+                    <p class="subtitle">เกมทายปริศนา คู่หูนักสืบ (เล่น 2 คน)</p>
+                </div>
+                <div id="theme-list">
+                    <!-- Themes will be injected here -->
+                </div>
+                <p class="text-center" style="color: #9ca3af; font-size: 0.8rem; margin-top: 2rem;">
+                    วาง iPad ไว้ตรงกลางแล้วเล่นด้วยกัน
+                </p>
+            </div>
+        </div>
+
+        <!-- 2. Selection Screen -->
+        <div id="select-screen" class="screen hidden">
+            <button onclick="goBack()" style="background:none; border:none; display:flex; align-items:center; color:#6b7280; font-size:0.9rem; cursor:pointer; margin-bottom:10px;">
+                <i data-lucide="arrow-left" style="width:16px; margin-right:5px;"></i> ยกเลิก
+            </button>
+            <div style="background:white; padding:20px; border-radius:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); text-align:center; max-width: 800px; margin: 0 auto;">
+                <span id="player-turn-badge" class="badge bg-red" style="display:inline-block; margin-bottom:10px;">ตาของผู้เล่น 1</span>
+                <h2 style="font-size:1.5rem; margin:0 0 10px 0; color:#1f2937;">เลือกตัวละครลับของคุณ</h2>
+                <p style="color:#ef4444; font-weight:bold; font-size:0.9rem; animation: pulse 2s infinite;">⚠️ ส่ง iPad ให้ผู้เล่นเห็นคนเดียว! ห้ามให้อีกฝ่ายดู!</p>
+                
+                <div id="select-grid" class="char-grid">
+                    <!-- Characters injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Game Screen -->
+        <div id="game-screen" class="screen hidden" style="padding:0; overflow:hidden;">
+            <div class="split-screen">
+                <!-- Center Controls -->
+                <div class="center-controls">
+                    <button class="reset-btn" onclick="confirmReset()">
+                        <i data-lucide="refresh-cw" style="width:20px; color:#4b5563;"></i>
+                    </button>
+                </div>
+
+                <!-- Player 1 (Top/Rotated) -->
+                <div id="p1-area" class="player-area p1 bg-red-50" style="background-color: #fff1f2;">
+                    <div class="board-header">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="badge bg-red">ผู้เล่น 1</span>
+                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p1-count">16</span></span>
+                        </div>
+                        <div style="position:relative;">
+                            <button class="secret-btn" onmousedown="showSecret(1, true)" onmouseup="showSecret(1, false)" ontouchstart="showSecret(1, true)" ontouchend="showSecret(1, false)">
+                                <i data-lucide="eye" style="width:14px;"></i> <span id="p1-secret-label">ตัวละครลับ</span>
+                            </button>
+                            <div id="p1-secret-popup" class="secret-popup hidden"></div>
+                        </div>
+                    </div>
+                    <div id="p1-grid" class="game-grid"></div>
+                </div>
+
+                <!-- Player 2 (Bottom) -->
+                <div id="p2-area" class="player-area p2 bg-blue-50" style="background-color: #eff6ff;">
+                    <div class="board-header">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="badge bg-blue">ผู้เล่น 2</span>
+                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p2-count">16</span></span>
+                        </div>
+                        <div style="position:relative;">
+                            <button class="secret-btn" onmousedown="showSecret(2, true)" onmouseup="showSecret(2, false)" ontouchstart="showSecret(2, true)" ontouchend="showSecret(2, false)">
+                                <i data-lucide="eye" style="width:14px;"></i> <span id="p2-secret-label">ตัวละครลับ</span>
+                            </button>
+                            <div id="p2-secret-popup" class="secret-popup hidden"></div>
+                        </div>
+                    </div>
+                    <div id="p2-grid" class="game-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const THEMES = {
+            faces: {
+                name: "ใบหน้าหรรษา",
+                color: "#3b82f6",
+                characters: [
+                    { id: 'f1', icon: '👨', name: 'สมชาย' }, { id: 'f2', icon: '👩', name: 'สมหญิง' },
+                    { id: 'f3', icon: '👴', name: 'ลุงพล' }, { id: 'f4', icon: '👵', name: 'ป้าศรี' },
+                    { id: 'f5', icon: '👱‍♂️', name: 'แจ็ค' }, { id: 'f6', icon: '👱‍♀️', name: 'จิล' },
+                    { id: 'f7', icon: '👮‍♂️', name: 'จ่าเฉย' }, { id: 'f8', icon: '🧙‍♀️', name: 'แม่มด' },
+                    { id: 'f9', icon: '🧔', name: 'บังฮา' }, { id: 'f10', icon: '👲', name: 'ตี๋เล็ก' },
+                    { id: 'f11', icon: '🧕', name: 'ฟารีดา' }, { id: 'f12', icon: '🤴', name: 'เจ้าชาย' },
+                    { id: 'f13', icon: '👸', name: 'เจ้าหญิง' }, { id: 'f14', icon: '🎅', name: 'ซานต้า' },
+                    { id: 'f15', icon: '👶', name: 'น้องบี' }, { id: 'f16', icon: '😎', name: 'พี่เท่' }
+                ]
+            },
+            animals: {
+                name: "สวนสัตว์อลเวง",
+                color: "#16a34a",
+                characters: [
+                    { id: 'a1', icon: '🐶', name: 'โฮ่งๆ' }, { id: 'a2', icon: '🐱', name: 'เหมียว' },
+                    { id: 'a3', icon: '🐭', name: 'จี๊ดๆ' }, { id: 'a4', icon: '🐹', name: 'แฮม' },
+                    { id: 'a5', icon: '🐰', name: 'ต่าย' }, { id: 'a6', icon: '🦊', name: 'จิ้งจอก' },
+                    { id: 'a7', icon: '🐻', name: 'พี่หมี' }, { id: 'a8', icon: '🐼', name: 'แพนด้า' },
+                    { id: 'a9', icon: '🦁', name: 'สิงโต' }, { id: 'a10', icon: '🐮', name: 'มอออ' },
+                    { id: 'a11', icon: '🐷', name: 'อู๊ดๆ' }, { id: 'a12', icon: '🐸', name: 'กบเคโระ' },
+                    { id: 'a13', icon: '🐙', name: 'หมึก' }, { id: 'a14', icon: '🐒', name: 'เจี๊ยกๆ' },
+                    { id: 'a15', icon: '🐔', name: 'กุ๊กๆ' }, { id: 'a16', icon: '🐧', name: 'เพนกวิน' }
+                ]
+            },
+            monsters: {
+                name: "มอนสเตอร์กุ๊กกู๋",
+                color: "#9333ea",
+                characters: [
+                    { id: 'm1', icon: '👽', name: 'เอเลี่ยน' }, { id: 'm2', icon: '👻', name: 'ผีน้อย' },
+                    { id: 'm3', icon: '👾', name: 'เกมบอย' }, { id: 'm4', icon: '🤖', name: 'โรบอท' },
+                    { id: 'm5', icon: '🎃', name: 'ฟักทอง' }, { id: 'm6', icon: '👹', name: 'ยักษ์แดง' },
+                    { id: 'm7', icon: '👺', name: 'เทนงู' }, { id: 'm8', icon: '💀', name: 'กระดูก' },
+                    { id: 'm9', icon: '👿', name: 'ปีศาจม่วง' }, { id: 'm10', icon: '🤡', name: 'ตัวตลก' },
+                    { id: 'm11', icon: '💩', name: 'อุนจิ' }, { id: 'm12', icon: '🧟', name: 'ซอมบี้' },
+                    { id: 'm13', icon: '🧛', name: 'แวมไพร์' }, { id: 'm14', icon: '🧞', name: 'จินนี่' },
+                    { id: 'm15', icon: '🦖', name: 'ทีเร็กซ์' }, { id: 'm16', icon: '🦄', name: 'ยูนิคอร์น' }
+                ]
+            }
+        };
+
+        // --- STATE ---
+        let state = {
+            currentTheme: 'faces',
+            phase: 'menu', // menu, select-p1, select-p2, playing
+            p1Secret: null,
+            p2Secret: null,
+            p1Board: [], // Array of IDs eliminated
+            p2Board: []
+        };
+
+        // --- INIT ---
+        function init() {
+            renderMenu();
+            lucide.createIcons();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderMenu() {
+            const list = document.getElementById('theme-list');
+            list.innerHTML = '';
+            
+            Object.keys(THEMES).forEach(key => {
+                const theme = THEMES[key];
+                const btn = document.createElement('button');
+                btn.className = 'theme-btn';
+                btn.style.backgroundColor = theme.color;
+                btn.onclick = () => startSetup(key);
+                btn.innerHTML = `
+                    <span class="theme-icon">${theme.characters[0].icon}</span>
+                    <div>
+                        <div class="font-bold" style="font-size:1.2rem;">${theme.name}</div>
+                        <div style="opacity:0.9; font-size:0.8rem;">${theme.characters.length} ตัวละคร</div>
+                    </div>
+                `;
+                list.appendChild(btn);
+            });
+
+            switchScreen('menu-screen');
+        }
+
+        function renderSelection(player) {
+            const grid = document.getElementById('select-grid');
+            grid.innerHTML = '';
+            const theme = THEMES[state.currentTheme];
+            const badge = document.getElementById('player-turn-badge');
+            
+            if (player === 1) {
+                badge.className = 'badge bg-red';
+                badge.textContent = 'ตาของผู้เล่น 1';
+                document.getElementById('select-screen').style.backgroundColor = '#fff1f2';
+            } else {
+                badge.className = 'badge bg-blue';
+                badge.textContent = 'ตาของผู้เล่น 2';
+                document.getElementById('select-screen').style.backgroundColor = '#eff6ff';
+            }
+
+            theme.characters.forEach(char => {
+                const btn = document.createElement('div');
+                btn.className = 'char-select-btn';
+                btn.onclick = () => selectSecret(player, char);
+                btn.innerHTML = `
+                    <span class="char-emoji">${char.icon}</span>
+                    <span class="char-name">${char.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+
+            switchScreen('select-screen');
+        }
+
+        function renderGame() {
+            const theme = THEMES[state.currentTheme];
+            
+            // Render P1 Board
+            renderPlayerBoard(1, theme.characters);
+            // Render P2 Board
+            renderPlayerBoard(2, theme.characters);
+            
+            // Set secret popups content
+            const p1Popup = document.getElementById('p1-secret-popup');
+            p1Popup.innerHTML = `
+                <span style="font-size:3rem;">${state.p1Secret.icon}</span>
+                <span style="font-weight:bold;">${state.p1Secret.name}</span>
+            `;
+
+            const p2Popup = document.getElementById('p2-secret-popup');
+            p2Popup.innerHTML = `
+                <span style="font-size:3rem;">${state.p2Secret.icon}</span>
+                <span style="font-weight:bold;">${state.p2Secret.name}</span>
+            `;
+
+            switchScreen('game-screen');
+            lucide.createIcons();
+        }
+
+        function renderPlayerBoard(player, characters) {
+            const gridId = player === 1 ? 'p1-grid' : 'p2-grid';
+            const elimSet = player === 1 ? state.p1Board : state.p2Board;
+            const grid = document.getElementById(gridId);
+            const countSpan = document.getElementById(player === 1 ? 'p1-count' : 'p2-count');
+            
+            grid.innerHTML = '';
+            
+            let activeCount = 0;
+
+            characters.forEach(char => {
+                const isEliminated = elimSet.includes(char.id);
+                if (!isEliminated) activeCount++;
+
+                const card = document.createElement('div');
+                card.className = `card ${isEliminated ? 'eliminated' : ''}`;
+                card.onclick = () => toggleCard(player, char.id);
+                card.innerHTML = `
+                    <div class="char-emoji">${char.icon}</div>
+                    <div class="char-name">${char.name}</div>
+                    <div class="x-mark"><i data-lucide="x" style="width:100%; height:100%;"></i></div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            countSpan.textContent = activeCount;
+            lucide.createIcons();
+        }
+
+        // --- LOGIC ---
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function startSetup(themeKey) {
+            state.currentTheme = themeKey;
+            state.p1Board = [];
+            state.p2Board = [];
+            state.phase = 'select-p1';
+            renderSelection(1);
+        }
+
+        function selectSecret(player, char) {
+            if (player === 1) {
+                state.p1Secret = char;
+                state.phase = 'select-p2';
+                renderSelection(2);
+            } else {
+                state.p2Secret = char;
+                state.phase = 'playing';
+                renderGame();
+            }
+        }
+
+        function toggleCard(player, charId) {
+            const board = player === 1 ? state.p1Board : state.p2Board;
+            const index = board.indexOf(charId);
+            
+            if (index === -1) {
+                board.push(charId);
+            } else {
+                board.splice(index, 1);
+            }
+            
+            renderPlayerBoard(player, THEMES[state.currentTheme].characters);
+        }
+
+        function showSecret(player, show) {
+            const popup = document.getElementById(player === 1 ? 'p1-secret-popup' : 'p2-secret-popup');
+            if (show) popup.classList.remove('hidden');
+            else popup.classList.add('hidden');
+        }
+
+        function goBack() {
+            state.phase = 'menu';
+            renderMenu();
+        }
+
+        function confirmReset() {
+            if(confirm('เริ่มเกมใหม่?')) {
+                goBack();
+            }
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
