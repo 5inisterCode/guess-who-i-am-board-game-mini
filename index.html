@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Who Am I? - คู่หูนักสืบ</title>
+    <title>Who Am I? Deluxe - คู่หูนักสืบ</title>
     <!-- ไอคอนจาก Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -13,7 +13,6 @@
             --bg-color: #f3f4f6;
             --text-color: #1f2937;
             --card-bg: #ffffff;
-            --danger-color: #ef4444;
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -23,68 +22,78 @@
         /* Helpers */
         .hidden { display: none !important; }
         .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .w-full { width: 100%; }
-        .h-full { height: 100%; }
         .text-center { text-align: center; }
         .font-bold { font-weight: bold; }
-        .cursor-pointer { cursor: pointer; }
 
         /* Screens */
         #app { height: 100%; width: 100%; position: relative; }
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow-y: auto; padding: 20px; transition: opacity 0.3s; }
 
         /* Menu Styles */
-        .menu-container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; height: 100%; }
-        .title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #111827; }
+        .menu-container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; min-height: 100%; padding-bottom: 40px; }
+        .title { font-size: 2.5rem; margin-bottom: 0.5rem; color: #111827; background: linear-gradient(45deg, #2563eb, #9333ea); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #6b7280; margin-bottom: 2rem; }
         
+        #theme-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .theme-btn {
-            display: flex; align-items: center; width: 100%; padding: 1.5rem; margin-bottom: 1rem;
+            display: flex; align-items: center; width: 100%; padding: 1rem;
             border: none; border-radius: 1rem; color: white; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s; text-align: left;
+            transition: transform 0.2s; text-align: left;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative; overflow: hidden;
         }
         .theme-btn:active { transform: scale(0.98); }
-        .theme-icon { font-size: 2.5rem; background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; margin-right: 15px; }
+        .theme-icon { font-size: 2rem; background: rgba(255,255,255,0.25); padding: 8px; border-radius: 12px; margin-right: 15px; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; }
 
         /* Selection Styles */
-        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
-        .char-select-btn {
-            background: white; border: 2px solid transparent; border-radius: 12px; padding: 10px;
-            display: flex; flex-direction: column; align-items: center; cursor: pointer;
-            transition: all 0.2s;
+        .char-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            margin-top: 20px; 
+            padding-bottom: 40px;
         }
-        .char-select-btn:hover { border-color: #e5e7eb; background: #f9fafb; }
-        .char-select-btn:active { transform: scale(0.95); }
-        .char-emoji { font-size: 2.5rem; margin-bottom: 5px; }
-        .char-name { font-size: 0.8rem; color: #4b5563; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+        .char-select-btn {
+            background: white; border: 2px solid transparent; border-radius: 12px; padding: 8px 4px;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .char-select-btn:active { transform: scale(0.95); background: #f3f4f6; }
+        .char-emoji { font-size: 2rem; margin-bottom: 2px; line-height: 1; }
+        .char-name { font-size: 0.75rem; color: #4b5563; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
 
         /* Game Board Styles */
         .split-screen { display: flex; flex-direction: column; height: 100%; background: #1f2937; }
-        .player-area { flex: 1; background: white; padding: 15px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
-        .player-area.p1 { border-bottom: 2px solid #374151; transform: rotate(180deg); }
-        .player-area.p2 { border-top: 2px solid #374151; }
+        .player-area { flex: 1; background: white; padding: 10px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+        .player-area.p1 { border-bottom: 4px solid #1f2937; transform: rotate(180deg); }
+        .player-area.p2 { border-top: 4px solid #1f2937; }
         
-        .board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .board-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; height: 32px; }
         .badge { padding: 4px 12px; border-radius: 999px; color: white; font-size: 0.85rem; font-weight: bold; }
         .bg-red { background-color: #ef4444; }
         .bg-blue { background-color: #3b82f6; }
         
-        .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; overflow-y: auto; padding-bottom: 10px; }
+        .game-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); /* 4 Columns */
+            gap: 6px; 
+            overflow-y: auto; 
+            padding-bottom: 10px;
+            height: 100%;
+            align-content: start;
+        }
         
         .card {
-            background: white; border: 2px solid #e5e7eb; border-radius: 10px;
-            padding: 8px; text-align: center; cursor: pointer; position: relative;
-            user-select: none; transition: all 0.1s;
+            background: white; border: 2px solid #e5e7eb; border-radius: 8px;
+            padding: 4px; text-align: center; cursor: pointer; position: relative;
+            user-select: none; transition: all 0.1s; height: 100%; min-height: 60px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .card:active { transform: scale(0.95); }
-        .card.eliminated { background-color: #e5e7eb; opacity: 0.6; transform: scale(0.95); border-color: #d1d5db; }
-        .card.eliminated .char-emoji { filter: grayscale(100%) blur(1px); }
-        .card .x-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; width: 80%; height: 80%; display: none; }
+        .card.eliminated { background-color: #f3f4f6; border-color: #d1d5db; }
+        .card.eliminated .char-emoji { opacity: 0.3; filter: grayscale(100%); }
+        .card.eliminated .char-name { color: #9ca3af; text-decoration: line-through; }
+        .card .x-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ef4444; width: 60%; height: 60%; display: none; z-index: 10; }
         .card.eliminated .x-mark { display: block; }
 
         .secret-btn {
@@ -94,9 +103,9 @@
         }
         .secret-popup {
             position: absolute; top: 40px; right: 0; background: white; padding: 10px;
-            border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 2px solid #fcd34d;
+            border-radius: 10px; box-shadow: 0 10px 25px -3px rgba(0,0,0,0.2); border: 3px solid #fbbf24;
             z-index: 50; display: flex; flex-direction: column; align-items: center;
-            animation: popIn 0.2s ease-out;
+            animation: popIn 0.2s ease-out; min-width: 100px;
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -104,14 +113,17 @@
             position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 100;
         }
         .reset-btn {
-            background: rgba(255,255,255,0.9); border: 1px solid #e5e7eb; border-radius: 50%; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: white; border: 2px solid #e5e7eb; border-radius: 50%; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #4b5563;
         }
+        .reset-btn:hover { color: #ef4444; border-color: #fca5a5; }
 
-        /* Responsive tweaks */
-        @media (min-width: 768px) {
-            .char-grid, .game-grid { grid-template-columns: repeat(8, 1fr); }
-            .menu-container { max-width: 600px; }
+        /* Responsive for Tablet/Desktop */
+        @media (min-width: 600px) {
+            .char-grid { grid-template-columns: repeat(6, 1fr); }
+            #theme-list { grid-template-columns: 1fr 1fr; }
+            .game-grid { grid-template-columns: repeat(6, 1fr); } /* 6 Columns on larger screens */
         }
     </style>
 </head>
@@ -123,14 +135,11 @@
             <div class="menu-container">
                 <div class="text-center">
                     <h1 class="title">Who Am I?</h1>
-                    <p class="subtitle">เกมทายปริศนา คู่หูนักสืบ (เล่น 2 คน)</p>
+                    <p class="subtitle">เกมทายปริศนาฉบับ Deluxe (24 ตัวละคร)</p>
                 </div>
                 <div id="theme-list">
-                    <!-- Themes will be injected here -->
+                    <!-- Themes injected here -->
                 </div>
-                <p class="text-center" style="color: #9ca3af; font-size: 0.8rem; margin-top: 2rem;">
-                    วาง iPad ไว้ตรงกลางแล้วเล่นด้วยกัน
-                </p>
             </div>
         </div>
 
@@ -141,12 +150,10 @@
             </button>
             <div style="background:white; padding:20px; border-radius:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); text-align:center; max-width: 800px; margin: 0 auto;">
                 <span id="player-turn-badge" class="badge bg-red" style="display:inline-block; margin-bottom:10px;">ตาของผู้เล่น 1</span>
-                <h2 style="font-size:1.5rem; margin:0 0 10px 0; color:#1f2937;">เลือกตัวละครลับของคุณ</h2>
-                <p style="color:#ef4444; font-weight:bold; font-size:0.9rem; animation: pulse 2s infinite;">⚠️ ส่ง iPad ให้ผู้เล่นเห็นคนเดียว! ห้ามให้อีกฝ่ายดู!</p>
+                <h2 style="font-size:1.5rem; margin:0 0 5px 0; color:#1f2937;">เลือกตัวละครลับ</h2>
+                <p style="color:#ef4444; font-weight:bold; font-size:0.8rem;">⚠️ ส่ง iPad ให้ผู้เล่นเห็นคนเดียว!</p>
                 
-                <div id="select-grid" class="char-grid">
-                    <!-- Characters injected here -->
-                </div>
+                <div id="select-grid" class="char-grid"></div>
             </div>
         </div>
 
@@ -156,20 +163,20 @@
                 <!-- Center Controls -->
                 <div class="center-controls">
                     <button class="reset-btn" onclick="confirmReset()">
-                        <i data-lucide="refresh-cw" style="width:20px; color:#4b5563;"></i>
+                        <i data-lucide="refresh-cw" style="width:20px;"></i>
                     </button>
                 </div>
 
-                <!-- Player 1 (Top/Rotated) -->
-                <div id="p1-area" class="player-area p1 bg-red-50" style="background-color: #fff1f2;">
+                <!-- Player 1 (Top) -->
+                <div id="p1-area" class="player-area p1" style="background-color: #fff1f2;">
                     <div class="board-header">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge bg-red">ผู้เล่น 1</span>
-                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p1-count">16</span></span>
+                            <span class="badge bg-red">P1</span>
+                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p1-count">24</span></span>
                         </div>
                         <div style="position:relative;">
                             <button class="secret-btn" onmousedown="showSecret(1, true)" onmouseup="showSecret(1, false)" ontouchstart="showSecret(1, true)" ontouchend="showSecret(1, false)">
-                                <i data-lucide="eye" style="width:14px;"></i> <span id="p1-secret-label">ตัวละครลับ</span>
+                                <i data-lucide="eye" style="width:14px;"></i> <span id="p1-secret-label">ดูความลับ</span>
                             </button>
                             <div id="p1-secret-popup" class="secret-popup hidden"></div>
                         </div>
@@ -178,15 +185,15 @@
                 </div>
 
                 <!-- Player 2 (Bottom) -->
-                <div id="p2-area" class="player-area p2 bg-blue-50" style="background-color: #eff6ff;">
+                <div id="p2-area" class="player-area p2" style="background-color: #eff6ff;">
                     <div class="board-header">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge bg-blue">ผู้เล่น 2</span>
-                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p2-count">16</span></span>
+                            <span class="badge bg-blue">P2</span>
+                            <span class="count" style="font-size:0.7rem; color:#6b7280;">เหลือ <span id="p2-count">24</span></span>
                         </div>
                         <div style="position:relative;">
                             <button class="secret-btn" onmousedown="showSecret(2, true)" onmouseup="showSecret(2, false)" ontouchstart="showSecret(2, true)" ontouchend="showSecret(2, false)">
-                                <i data-lucide="eye" style="width:14px;"></i> <span id="p2-secret-label">ตัวละครลับ</span>
+                                <i data-lucide="eye" style="width:14px;"></i> <span id="p2-secret-label">ดูความลับ</span>
                             </button>
                             <div id="p2-secret-popup" class="secret-popup hidden"></div>
                         </div>
@@ -198,48 +205,90 @@
     </div>
 
     <script>
-        // --- DATA ---
+        // --- DATA (24 Characters per theme) ---
         const THEMES = {
             faces: {
                 name: "ใบหน้าหรรษา",
-                color: "#3b82f6",
+                color: "#3b82f6", // Blue
                 characters: [
-                    { id: 'f1', icon: '👨', name: 'สมชาย' }, { id: 'f2', icon: '👩', name: 'สมหญิง' },
-                    { id: 'f3', icon: '👴', name: 'ลุงพล' }, { id: 'f4', icon: '👵', name: 'ป้าศรี' },
-                    { id: 'f5', icon: '👱‍♂️', name: 'แจ็ค' }, { id: 'f6', icon: '👱‍♀️', name: 'จิล' },
-                    { id: 'f7', icon: '👮‍♂️', name: 'จ่าเฉย' }, { id: 'f8', icon: '🧙‍♀️', name: 'แม่มด' },
-                    { id: 'f9', icon: '🧔', name: 'บังฮา' }, { id: 'f10', icon: '👲', name: 'ตี๋เล็ก' },
-                    { id: 'f11', icon: '🧕', name: 'ฟารีดา' }, { id: 'f12', icon: '🤴', name: 'เจ้าชาย' },
-                    { id: 'f13', icon: '👸', name: 'เจ้าหญิง' }, { id: 'f14', icon: '🎅', name: 'ซานต้า' },
-                    { id: 'f15', icon: '👶', name: 'น้องบี' }, { id: 'f16', icon: '😎', name: 'พี่เท่' }
+                    { id: 'f1', icon: '👨', name: 'เอก' }, { id: 'f2', icon: '👩', name: 'แอน' }, { id: 'f3', icon: '👴', name: 'ปู่' }, { id: 'f4', icon: '👵', name: 'ย่า' },
+                    { id: 'f5', icon: '👱‍♂️', name: 'เคน' }, { id: 'f6', icon: '👱‍♀️', name: 'บาร์บี้' }, { id: 'f7', icon: '👮‍♂️', name: 'จ่า' }, { id: 'f8', icon: '🧙‍♀️', name: 'แม่มด' },
+                    { id: 'f9', icon: '🧔', name: 'บัง' }, { id: 'f10', icon: '👲', name: 'อาตี๋' }, { id: 'f11', icon: '🧕', name: 'มีนา' }, { id: 'f12', icon: '🤴', name: 'เจ้าชาย' },
+                    { id: 'f13', icon: '👸', name: 'เจ้าหญิง' }, { id: 'f14', icon: '🎅', name: 'ซานต้า' }, { id: 'f15', icon: '👶', name: 'เบบี้' }, { id: 'f16', icon: '😎', name: 'พี่เข้ม' },
+                    { id: 'f17', icon: '🤠', name: 'คาวบอย' }, { id: 'f18', icon: '🤡', name: 'โบโซ่' }, { id: 'f19', icon: '👿', name: 'มารร้าย' }, { id: 'f20', icon: '👽', name: 'เอเลี่ยน' },
+                    { id: 'f21', icon: '🤖', name: 'โรบอท' }, { id: 'f22', icon: '🧟', name: 'ซอมบี้' }, { id: 'f23', icon: '🧛', name: 'ท่านเคาท์' }, { id: 'f24', icon: '🥷', name: 'นินจา' }
                 ]
             },
             animals: {
-                name: "สวนสัตว์อลเวง",
-                color: "#16a34a",
+                name: "สวนสัตว์",
+                color: "#16a34a", // Green
                 characters: [
-                    { id: 'a1', icon: '🐶', name: 'โฮ่งๆ' }, { id: 'a2', icon: '🐱', name: 'เหมียว' },
-                    { id: 'a3', icon: '🐭', name: 'จี๊ดๆ' }, { id: 'a4', icon: '🐹', name: 'แฮม' },
-                    { id: 'a5', icon: '🐰', name: 'ต่าย' }, { id: 'a6', icon: '🦊', name: 'จิ้งจอก' },
-                    { id: 'a7', icon: '🐻', name: 'พี่หมี' }, { id: 'a8', icon: '🐼', name: 'แพนด้า' },
-                    { id: 'a9', icon: '🦁', name: 'สิงโต' }, { id: 'a10', icon: '🐮', name: 'มอออ' },
-                    { id: 'a11', icon: '🐷', name: 'อู๊ดๆ' }, { id: 'a12', icon: '🐸', name: 'กบเคโระ' },
-                    { id: 'a13', icon: '🐙', name: 'หมึก' }, { id: 'a14', icon: '🐒', name: 'เจี๊ยกๆ' },
-                    { id: 'a15', icon: '🐔', name: 'กุ๊กๆ' }, { id: 'a16', icon: '🐧', name: 'เพนกวิน' }
+                    { id: 'a1', icon: '🐶', name: 'หมา' }, { id: 'a2', icon: '🐱', name: 'แมว' }, { id: 'a3', icon: '🐭', name: 'หนู' }, { id: 'a4', icon: '🐹', name: 'แฮม' },
+                    { id: 'a5', icon: '🐰', name: 'ต่าย' }, { id: 'a6', icon: '🦊', name: 'จิ้งจอก' }, { id: 'a7', icon: '🐻', name: 'หมี' }, { id: 'a8', icon: '🐼', name: 'แพนด้า' },
+                    { id: 'a9', icon: '🦁', name: 'สิงโต' }, { id: 'a10', icon: '🐮', name: 'วัว' }, { id: 'a11', icon: '🐷', name: 'หมู' }, { id: 'a12', icon: '🐸', name: 'กบ' },
+                    { id: 'a13', icon: '🐵', name: 'ลิง' }, { id: 'a14', icon: '🐔', name: 'ไก่' }, { id: 'a15', icon: '🐧', name: 'เพนกวิน' }, { id: 'a16', icon: '🐘', name: 'ช้าง' },
+                    { id: 'a17', icon: '🐙', name: 'หมึก' }, { id: 'a18', icon: '🐬', name: 'โลมา' }, { id: 'a19', icon: '🦄', name: 'ยูนิคอร์น' }, { id: 'a20', icon: '🦖', name: 'ทีเร็กซ์' },
+                    { id: 'a21', icon: '🦉', name: 'ฮูก' }, { id: 'a22', icon: '🦇', name: 'ค้างคาว' }, { id: 'a23', icon: '🦋', name: 'ผีเสื้อ' }, { id: 'a24', icon: '🐢', name: 'เต่า' }
                 ]
             },
-            monsters: {
-                name: "มอนสเตอร์กุ๊กกู๋",
-                color: "#9333ea",
+            careers: {
+                name: "อาชีพในฝัน",
+                color: "#f59e0b", // Amber
                 characters: [
-                    { id: 'm1', icon: '👽', name: 'เอเลี่ยน' }, { id: 'm2', icon: '👻', name: 'ผีน้อย' },
-                    { id: 'm3', icon: '👾', name: 'เกมบอย' }, { id: 'm4', icon: '🤖', name: 'โรบอท' },
-                    { id: 'm5', icon: '🎃', name: 'ฟักทอง' }, { id: 'm6', icon: '👹', name: 'ยักษ์แดง' },
-                    { id: 'm7', icon: '👺', name: 'เทนงู' }, { id: 'm8', icon: '💀', name: 'กระดูก' },
-                    { id: 'm9', icon: '👿', name: 'ปีศาจม่วง' }, { id: 'm10', icon: '🤡', name: 'ตัวตลก' },
-                    { id: 'm11', icon: '💩', name: 'อุนจิ' }, { id: 'm12', icon: '🧟', name: 'ซอมบี้' },
-                    { id: 'm13', icon: '🧛', name: 'แวมไพร์' }, { id: 'm14', icon: '🧞', name: 'จินนี่' },
-                    { id: 'm15', icon: '🦖', name: 'ทีเร็กซ์' }, { id: 'm16', icon: '🦄', name: 'ยูนิคอร์น' }
+                    { id: 'c1', icon: '👮', name: 'ตำรวจ' }, { id: 'c2', icon: '🧑‍🚒', name: 'ดับเพลิง' }, { id: 'c3', icon: '👷', name: 'ก่อสร้าง' }, { id: 'c4', icon: '🧑‍⚕️', name: 'หมอ' },
+                    { id: 'c5', icon: '🧑‍🍳', name: 'เชฟ' }, { id: 'c6', icon: '🧑‍🌾', name: 'ชาวนา' }, { id: 'c7', icon: '🧑‍🏫', name: 'ครู' }, { id: 'c8', icon: '🧑‍🎓', name: 'นักเรียน' },
+                    { id: 'c9', icon: '🧑‍🎤', name: 'นักร้อง' }, { id: 'c10', icon: '🧑‍🎨', name: 'ศิลปิน' }, { id: 'c11', icon: '🧑‍✈️', name: 'นักบิน' }, { id: 'c12', icon: '🧑‍🚀', name: 'อวกาศ' },
+                    { id: 'c13', icon: '🕵️', name: 'นักสืบ' }, { id: 'c14', icon: '💂', name: 'ทหาร' }, { id: 'c15', icon: '🤵', name: 'บริกร' }, { id: 'c16', icon: '🦸', name: 'ฮีโร่' },
+                    { id: 'c17', icon: '🦹', name: 'ตัวร้าย' }, { id: 'c18', icon: '🧙', name: 'นักเวทย์' }, { id: 'c19', icon: '🧛', name: 'ผีดูดเลือด' }, { id: 'c20', icon: '🧟', name: 'ศพเดินได้' },
+                    { id: 'c21', icon: '🧞', name: 'จินนี่' }, { id: 'c22', icon: '🧜', name: 'เงือก' }, { id: 'c23', icon: '🧚', name: 'นางฟ้า' }, { id: 'c24', icon: '👼', name: 'คิวปิด' }
+                ]
+            },
+            food: {
+                name: "ของกินแสนอร่อย",
+                color: "#ef4444", // Red
+                characters: [
+                    { id: 'fd1', icon: '🍎', name: 'แอปเปิ้ล' }, { id: 'fd2', icon: '🍌', name: 'กล้วย' }, { id: 'fd3', icon: '🍉', name: 'แตงโม' }, { id: 'fd4', icon: '🍇', name: 'องุ่น' },
+                    { id: 'fd5', icon: '🍓', name: 'สตรอฯ' }, { id: 'fd6', icon: '🍔', name: 'เบอร์เกอร์' }, { id: 'fd7', icon: '🍟', name: 'เฟรนช์ฟราย' }, { id: 'fd8', icon: '🍕', name: 'พิซซ่า' },
+                    { id: 'fd9', icon: '🌭', name: 'ฮอทดอก' }, { id: 'fd10', icon: '🥪', name: 'แซนวิช' }, { id: 'fd11', icon: '🌮', name: 'ทาโก้' }, { id: 'fd12', icon: '🍜', name: 'ราเมง' },
+                    { id: 'fd13', icon: '🍣', name: 'ซูชิ' }, { id: 'fd14', icon: '🍤', name: 'กุ้งทอด' }, { id: 'fd15', icon: '🍦', name: 'ไอติม' }, { id: 'fd16', icon: '🍩', name: 'โดนัท' },
+                    { id: 'fd17', icon: '🍪', name: 'คุกกี้' }, { id: 'fd18', icon: '🎂', name: 'เค้ก' }, { id: 'fd19', icon: '🍫', name: 'ช็อกโก' }, { id: 'fd20', icon: '🍿', name: 'ป๊อปคอร์น' },
+                    { id: 'fd21', icon: '🥤', name: 'น้ำอัดลม' }, { id: 'fd22', icon: '🧋', name: 'ชาไข่มุก' }, { id: 'fd23', icon: '🍺', name: 'เบียร์' }, { id: 'fd24', icon: '☕', name: 'กาแฟ' }
+                ]
+            },
+            sports: {
+                name: "โลกกีฬา",
+                color: "#0ea5e9", // Sky Blue
+                characters: [
+                    { id: 's1', icon: '⚽', name: 'บอล' }, { id: 's2', icon: '🏀', name: 'บาส' }, { id: 's3', icon: '🏈', name: 'รักบี้' }, { id: 's4', icon: '⚾', name: 'เบสบอล' },
+                    { id: 's5', icon: '🎾', name: 'เทนนิส' }, { id: 's6', icon: '🏐', name: 'วอลเลย์' }, { id: 's7', icon: '🏉', name: 'รักบี้2' }, { id: 's8', icon: '🎱', name: 'สนุ๊ก' },
+                    { id: 's9', icon: '🏓', name: 'ปิงปอง' }, { id: 's10', icon: '🏸', name: 'แบด' }, { id: 's11', icon: '🥊', name: 'มวย' }, { id: 's12', icon: '🥋', name: 'ยูโด' },
+                    { id: 's13', icon: '⛳', name: 'กอล์ฟ' }, { id: 's14', icon: '⛸️', name: 'สเก็ต' }, { id: 's15', icon: '🎣', name: 'ตกปลา' }, { id: 's16', icon: '🤿', name: 'ดำน้ำ' },
+                    { id: 's17', icon: '🏄', name: 'เซิร์ฟ' }, { id: 's18', icon: '🏊', name: 'ว่ายน้ำ' }, { id: 's19', icon: '🚴', name: 'จักรยาน' }, { id: 's20', icon: '🏆', name: 'ถ้วย' },
+                    { id: 's21', icon: '🥇', name: 'เหรียญทอง' }, { id: 's22', icon: '🎫', name: 'ตั๋ว' }, { id: 's23', icon: '🎳', name: 'โบว์ลิ่ง' }, { id: 's24', icon: '🎯', name: 'เป้า' }
+                ]
+            },
+            vehicles: {
+                name: "ยานพาหนะ",
+                color: "#6366f1", // Indigo
+                characters: [
+                    { id: 'v1', icon: '🚗', name: 'รถเก๋ง' }, { id: 'v2', icon: '🚕', name: 'แท็กซี่' }, { id: 'v3', icon: '🚙', name: 'RV' }, { id: 'v4', icon: '🚌', name: 'บัส' },
+                    { id: 'v5', icon: '🚎', name: 'รถราง' }, { id: 'v6', icon: '🏎️', name: 'แข่ง' }, { id: 'v7', icon: '🚓', name: 'ตำรวจ' }, { id: 'v8', icon: '🚑', name: 'พยาบาล' },
+                    { id: 'v9', icon: '🚒', name: 'ดับเพลิง' }, { id: 'v10', icon: '🚐', name: 'ตู้' }, { id: 'v11', icon: '🛻', name: 'กระบะ' }, { id: 'v12', icon: '🚚', name: 'บรรทุก' },
+                    { id: 'v13', icon: '🚜', name: 'แทรกเตอร์' }, { id: 'v14', icon: '🛵', name: 'สกู๊ตเตอร์' }, { id: 'v15', icon: '🚲', name: 'จักรยาน' }, { id: 'v16', icon: '🚂', name: 'หัวจักร' },
+                    { id: 'v17', icon: '✈️', name: 'เครื่องบิน' }, { id: 'v18', icon: '🚀', name: 'จรวด' }, { id: 'v19', icon: '🛸', name: 'UFO' }, { id: 'v20', icon: '🚁', name: 'ฮอ' },
+                    { id: 'v21', icon: '🛶', name: 'พาย' }, { id: 'v22', icon: '⛵', name: 'ใบ' }, { id: 'v23', icon: '🚢', name: 'สำราญ' }, { id: 'v24', icon: '⚓', name: 'สมอ' }
+                ]
+            },
+            objects: {
+                name: "สิ่งของรอบตัว",
+                color: "#8b5cf6", // Violet
+                characters: [
+                    { id: 'o1', icon: '⌚', name: 'นาฬิกา' }, { id: 'o2', icon: '📱', name: 'มือถือ' }, { id: 'o3', icon: '💻', name: 'คอม' }, { id: 'o4', icon: '⌨️', name: 'คีย์บอร์ด' },
+                    { id: 'o5', icon: '🖥️', name: 'จอ' }, { id: 'o6', icon: '🖨️', name: 'ปรินท์' }, { id: 'o7', icon: '🖱️', name: 'เมาส์' }, { id: 'o8', icon: '📷', name: 'กล้อง' },
+                    { id: 'o9', icon: '📺', name: 'ทีวี' }, { id: 'o10', icon: '📻', name: 'วิทยุ' }, { id: 'o11', icon: '🎙️', name: 'ไมค์' }, { id: 'o12', icon: '💎', name: 'เพชร' },
+                    { id: 'o13', icon: '💡', name: 'หลอดไฟ' }, { id: 'o14', icon: '🔦', name: 'ไฟฉาย' }, { id: 'o15', icon: '📕', name: 'หนังสือ' }, { id: 'o16', icon: '✏️', name: 'ดินสอ' },
+                    { id: 'o17', icon: '✂️', name: 'กรรไกร' }, { id: 'o18', icon: '🗑️', name: 'ถังขยะ' }, { id: 'o19', icon: '🗝️', name: 'กุญแจ' }, { id: 'o20', icon: '🎁', name: 'ของขวัญ' },
+                    { id: 'o21', icon: '🎈', name: 'ลูกโป่ง' }, { id: 'o22', icon: '🧸', name: 'ตุ๊กตา' }, { id: 'o23', icon: '🖼️', name: 'รูปภาพ' }, { id: 'o24', icon: '🕶️', name: 'แว่น' }
                 ]
             }
         };
@@ -247,10 +296,10 @@
         // --- STATE ---
         let state = {
             currentTheme: 'faces',
-            phase: 'menu', // menu, select-p1, select-p2, playing
+            phase: 'menu', 
             p1Secret: null,
             p2Secret: null,
-            p1Board: [], // Array of IDs eliminated
+            p1Board: [], 
             p2Board: []
         };
 
@@ -273,10 +322,11 @@
                 btn.onclick = () => startSetup(key);
                 btn.innerHTML = `
                     <span class="theme-icon">${theme.characters[0].icon}</span>
-                    <div>
-                        <div class="font-bold" style="font-size:1.2rem;">${theme.name}</div>
-                        <div style="opacity:0.9; font-size:0.8rem;">${theme.characters.length} ตัวละคร</div>
+                    <div style="flex:1;">
+                        <div class="font-bold" style="font-size:1.1rem;">${theme.name}</div>
+                        <div style="opacity:0.9; font-size:0.75rem;">${theme.characters.length} ตัวละคร</div>
                     </div>
+                    <i data-lucide="chevron-right" style="opacity:0.6;"></i>
                 `;
                 list.appendChild(btn);
             });
@@ -316,21 +366,15 @@
 
         function renderGame() {
             const theme = THEMES[state.currentTheme];
-            
-            // Render P1 Board
             renderPlayerBoard(1, theme.characters);
-            // Render P2 Board
             renderPlayerBoard(2, theme.characters);
             
-            // Set secret popups content
-            const p1Popup = document.getElementById('p1-secret-popup');
-            p1Popup.innerHTML = `
+            // Set secret popups
+            document.getElementById('p1-secret-popup').innerHTML = `
                 <span style="font-size:3rem;">${state.p1Secret.icon}</span>
                 <span style="font-weight:bold;">${state.p1Secret.name}</span>
             `;
-
-            const p2Popup = document.getElementById('p2-secret-popup');
-            p2Popup.innerHTML = `
+            document.getElementById('p2-secret-popup').innerHTML = `
                 <span style="font-size:3rem;">${state.p2Secret.icon}</span>
                 <span style="font-weight:bold;">${state.p2Secret.name}</span>
             `;
@@ -346,7 +390,6 @@
             const countSpan = document.getElementById(player === 1 ? 'p1-count' : 'p2-count');
             
             grid.innerHTML = '';
-            
             let activeCount = 0;
 
             characters.forEach(char => {
@@ -369,7 +412,6 @@
         }
 
         // --- LOGIC ---
-
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
@@ -398,13 +440,8 @@
         function toggleCard(player, charId) {
             const board = player === 1 ? state.p1Board : state.p2Board;
             const index = board.indexOf(charId);
-            
-            if (index === -1) {
-                board.push(charId);
-            } else {
-                board.splice(index, 1);
-            }
-            
+            if (index === -1) board.push(charId);
+            else board.splice(index, 1);
             renderPlayerBoard(player, THEMES[state.currentTheme].characters);
         }
 
@@ -420,14 +457,10 @@
         }
 
         function confirmReset() {
-            if(confirm('เริ่มเกมใหม่?')) {
-                goBack();
-            }
+            if(confirm('เริ่มเกมใหม่?')) goBack();
         }
 
-        // Start
         init();
-
     </script>
 </body>
 </html>
